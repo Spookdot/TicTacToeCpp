@@ -398,15 +398,19 @@ auto main() -> int {
     FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI
   );
 
-  auto game = Game::create(screenWidth, screenHeight);
+  // General data
   auto gameState = GameState::Start;
   std::optional<Symbol> winner = std::optional<Symbol>();
 
+  // GameState::Start data
   raylib::Rectangle startButton = createCenteredRectangle(
       screenWidthFloat / 2, 
       screenHeightFloat / 3 * 2, 
       100, 50
   );
+
+  // GameState::Game data
+  auto game = Game::create(screenWidth, screenHeight);
 
   while(!window.ShouldClose()) {
     if(gameState == GameState::Start) {
@@ -426,7 +430,7 @@ auto main() -> int {
       );
       drawCenteredText("Tic Tac Toe", textPosition, 50, 1.5, raylib::Color::Black());
 
-      startButton.DrawLines(raylib::Color::Black());
+      startButton.DrawLines(raylib::Color::Black(), 2.0);
 
       window.EndDrawing();
     } else if(gameState == GameState::Game) {
