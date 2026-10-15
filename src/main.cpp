@@ -20,7 +20,7 @@ using std::string;
 
 namespace {
   enum GameState {
-    Game, Finished
+    Start, Game, Finished
   };
 
   enum Symbol {
@@ -233,6 +233,41 @@ namespace {
               field[0][1].symbolPointer(), 
               field[0][2].symbolPointer()
         ));
+        evaluators.push_back(Evaluator::create(
+              field[1][0].symbolPointer(), 
+              field[1][1].symbolPointer(), 
+              field[1][2].symbolPointer()
+        ));
+        evaluators.push_back(Evaluator::create(
+              field[2][0].symbolPointer(), 
+              field[2][1].symbolPointer(), 
+              field[2][2].symbolPointer()
+        ));
+        evaluators.push_back(Evaluator::create(
+              field[0][0].symbolPointer(), 
+              field[1][0].symbolPointer(), 
+              field[2][0].symbolPointer()
+        ));
+        evaluators.push_back(Evaluator::create(
+              field[0][1].symbolPointer(), 
+              field[1][1].symbolPointer(), 
+              field[2][1].symbolPointer()
+        ));
+        evaluators.push_back(Evaluator::create(
+              field[0][2].symbolPointer(), 
+              field[1][2].symbolPointer(), 
+              field[2][2].symbolPointer()
+        ));
+        evaluators.push_back(Evaluator::create(
+              field[0][0].symbolPointer(), 
+              field[1][1].symbolPointer(), 
+              field[2][2].symbolPointer()
+        ));
+        evaluators.push_back(Evaluator::create(
+              field[0][2].symbolPointer(), 
+              field[1][1].symbolPointer(), 
+              field[2][0].symbolPointer()
+        ));
         return evaluators;
       }
       auto filterField(const std::function<auto (const Field&) -> bool> &f) const -> vector<Field> {
@@ -339,9 +374,22 @@ void drawCenteredText(
   font.DrawText(text, actualPosition, fontSize, spacing, color);
 }
 
+auto createCenteredRectangle(
+  const float x,
+  const float y,
+  const float width,
+  const float height
+) -> raylib::Rectangle {
+  const float actualX = x - (width / 2);
+  const float actualY = y - (height / 2);
+  return raylib::Rectangle(actualX, actualY, width, height);
+}
+
 auto main() -> int {
   constexpr int screenHeight = 600;
   constexpr int screenWidth = 800;
+  const float screenHeightFloat = static_cast<float>(screenHeight);
+  const float screenWidthFloat = static_cast<float>(screenWidth);
 
   raylib::Window window(
     screenWidth, 
@@ -351,11 +399,37 @@ auto main() -> int {
   );
 
   auto game = Game::create(screenWidth, screenHeight);
-  auto gameState = GameState::Game;
+  auto gameState = GameState::Start;
   std::optional<Symbol> winner = std::optional<Symbol>();
 
+  raylib::Rectangle startButton = createCenteredRectangle(
+      screenWidthFloat / 2, 
+      screenHeightFloat / 3 * 2, 
+      100, 50
+  );
+
   while(!window.ShouldClose()) {
-    if(gameState == GameState::Game) {
+    if(gameState == GameState::Start) {
+      if(raylib::Mouse::IsButtonPressed(MOUSE_LEFT_BUTTON)) {
+        bool startButtonPressed = startButton.CheckCollision(raylib::Mouse::GetPosition());
+        if(startButtonPressed) {
+          gameState = GameState::Game;
+        }
+      }
+
+      window.BeginDrawing();
+      window.ClearBackground(raylib::Color::White());
+
+      raylib::Vector2 textPosition = raylib::Vector2(
+        screenWidthFloat / 2,
+        screenHeightFloat / 3
+      );
+      drawCenteredText("Tic Tac Toe", textPosition, 50, 1.5, raylib::Color::Black());
+
+      startButton.DrawLines(raylib::Color::Black());
+
+      window.EndDrawing();
+    } else if(gameState == GameState::Game) {
       std::optional<raylib::Rectangle> rect = std::optional<raylib::Rectangle>();
       if(raylib::Mouse::IsButtonPressed(MOUSE_LEFT_BUTTON)) {
         Field field = game.findCollider(raylib::Mouse::GetPosition());
@@ -386,8 +460,8 @@ auto main() -> int {
 
       string text = std::format("{} wins!", winner.value());
       raylib::Vector2 textPosition = raylib::Vector2(
-          static_cast<float>(screenWidth) / 2, 
-          static_cast<float>(screenHeight) / 2
+          screenWidthFloat / 2, 
+          screenHeightFloat / 2
       );
       drawCenteredText(text, textPosition, 30, 1.5, raylib::Color::Black());
 
