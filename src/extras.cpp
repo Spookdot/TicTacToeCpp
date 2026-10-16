@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <raylib-cpp.hpp>
+#include <utility>
 
 RectangleCorners::RectangleCorners(const float x, const float y, const float x2,
                                    const float y2)
@@ -11,7 +12,7 @@ RectangleCorners::RectangleCorners(const float x, const float y, const float x2,
 auto RectangleCorners::withWidthAndHeight(const float x, const float y,
                                           const float width, const float height)
     -> RectangleCorners {
-  return RectangleCorners(x, y, x + width, y + height);
+  return {x, y, x + width, y + height};
 }
 
 auto RectangleCorners::fromRectangle(const raylib::Rectangle &rectangle)
@@ -37,10 +38,9 @@ auto RectangleCorners::lowerRight() const -> raylib::Vector2 {
   return this->m_lowerRight;
 }
 
-
 Field::Field(const float x, const float y, const float width,
              const float height, shared_ptr<Symbol> pointer)
-    : m_collider(x, y, width, height), m_symbol(pointer) {}
+    : m_collider(x, y, width, height), m_symbol(std::move(pointer)) {}
 
 void Field::drawCross(const float lineThickness,
                       const raylib::Color &color) const {
@@ -74,7 +74,7 @@ void Field::drawCircle(const raylib::Color &color) const {
 auto Field::fromCoordinates(const float x, const float y, const float width,
                             const float height) -> Field {
   shared_ptr<Symbol> pointer = std::make_shared<Symbol>(Symbol::None);
-  return Field(x, y, width, height, std::move(pointer));
+  return {x, y, width, height, std::move(pointer)};
 }
 
 auto Field::symbolPointer() const -> shared_ptr<Symbol> {
@@ -107,7 +107,6 @@ void Field::drawSymbol(const raylib::Color &color) const {
   this->drawSymbol(1.0, color);
 }
 
-
 Line::Line(const raylib::Vector2 lineStart, const raylib::Vector2 lineEnd)
     : m_lineStart(lineStart), m_lineEnd(lineEnd) {}
 
@@ -126,3 +125,19 @@ void Line::draw(const float lineThickness, const raylib::Color &color) const {
 auto Line::lineStart() -> raylib::Vector2 const { return this->m_lineStart; }
 
 auto Line::lineEnd() -> raylib::Vector2 const { return this->m_lineEnd; }
+Evaluator::Evaluator(const vector<shared_ptr<Symbol>> &line) : m_line(line) {}
+auto Evaluator::create(const shared_ptr<Symbol> &first,
+                       const shared_ptr<Symbol> &second,
+                       const shared_ptr<Symbol> &third) -> Evaluator {
+  const vector<shared_ptr<Symbol>> line =
+      vector<shared_ptr<Symbol>>({first, second, third});
+  return Evaluator(line);
+}
+auto Evaluator::evaluate() const -> Symbol {
+  bool symbolsAreSame =
+      (*(m_line[0]) == *(m_line[1])) && (*(m_line[1]) == *(m_line[2]));
+  if (symbolsAreSame) {
+    return *(m_line[0]);
+  }
+  return Symbol::None;
+}
