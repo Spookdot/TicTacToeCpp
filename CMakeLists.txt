@@ -15,8 +15,9 @@ CPMAddPackage(
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(SOURCES src/main.cpp)
+set(SOURCES src/main.cpp src/extras.cpp src/game.cpp)
 add_executable(${PROJECT_NAME} ${SOURCES})
+target_include_directories(${PROJECT_NAME} PRIVATE include/)
 target_link_libraries(
     ${PROJECT_NAME} 
     PUBLIC raylib 
