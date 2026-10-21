@@ -4,51 +4,22 @@
 #include <raylib-cpp.hpp>
 #include <utility>
 
-RectangleCorners::RectangleCorners(const float x, const float y, const float x2,
-                                   const float y2)
-    : m_upperLeft(x, y), m_upperRight(x2, y), m_lowerLeft(x, y2),
-      m_lowerRight(x2, y2) {}
+using std::shared_ptr;
+using std::vector;
 
-auto RectangleCorners::withWidthAndHeight(const float x, const float y,
-                                          const float width, const float height)
-    -> RectangleCorners {
-  return {x, y, x + width, y + height};
-}
-
-auto RectangleCorners::fromRectangle(const raylib::Rectangle &rectangle)
-    -> RectangleCorners {
-  return RectangleCorners::withWidthAndHeight(
-      rectangle.GetX(), rectangle.GetY(), rectangle.GetWidth(),
-      rectangle.GetHeight());
-}
-
-auto RectangleCorners::upperLeft() const -> raylib::Vector2 {
-  return this->m_upperLeft;
-}
-
-auto RectangleCorners::lowerLeft() const -> raylib::Vector2 {
-  return this->m_lowerLeft;
-}
-
-auto RectangleCorners::upperRight() const -> raylib::Vector2 {
-  return this->m_upperRight;
-}
-
-auto RectangleCorners::lowerRight() const -> raylib::Vector2 {
-  return this->m_lowerRight;
-}
-
-Field::Field(const float x, const float y, const float width,
-             const float height, shared_ptr<Symbol> pointer)
-    : m_collider(x, y, width, height), m_symbol(std::move(pointer)) {}
+Field::Field(const raylib::Rectangle &rectangle, std::shared_ptr<Symbol> pointer)
+    : m_collider(rectangle), m_symbol(std::move(pointer)) {}
 
 void Field::drawCross(const float lineThickness,
                       const raylib::Color &color) const {
   // TODO change so it doesn't go all the way to the corners
-  auto corners = RectangleCorners::fromRectangle(this->m_collider);
+  raylib::Vector2 upperLeft = this->m_collider.GetPosition();
+  raylib::Vector2 upperRight = { upperLeft.x + this->m_collider.width, upperLeft.y};
+  raylib::Vector2 lowerLeft = { upperLeft.x, upperLeft.y + this->m_collider.height };
+  raylib::Vector2 lowerRight = upperLeft + this->m_collider.GetSize();
 
-  corners.upperLeft().DrawLine(corners.lowerRight(), lineThickness, color);
-  corners.upperRight().DrawLine(corners.lowerLeft(), lineThickness, color);
+  upperLeft.DrawLine(lowerRight, lineThickness, color);
+  upperRight.DrawLine(lowerLeft, lineThickness, color);
 }
 
 void Field::drawCross(const raylib::Color &color) const {
@@ -71,10 +42,9 @@ void Field::drawCircle(const raylib::Color &color) const {
   this->drawCircle(1.0, color);
 }
 
-auto Field::fromCoordinates(const float x, const float y, const float width,
-                            const float height) -> Field {
+auto Field::fromRectangle(const raylib::Rectangle &rectangle) -> Field {
   shared_ptr<Symbol> pointer = std::make_shared<Symbol>(Symbol::None);
-  return {x, y, width, height, std::move(pointer)};
+  return {rectangle, std::move(pointer)};
 }
 
 auto Field::symbolPointer() const -> shared_ptr<Symbol> {
@@ -83,7 +53,7 @@ auto Field::symbolPointer() const -> shared_ptr<Symbol> {
 
 auto Field::collider() const -> raylib::Rectangle { return this->m_collider; }
 
-void Field::setSymbol(const Symbol symbol) { *(this->m_symbol) = symbol; }
+void Field::setSymbol(const Symbol symbol) { *this->m_symbol = symbol; }
 
 auto Field::checkCollision(const raylib::Vector2 &point) const -> bool {
   return this->m_collider.CheckCollision(point);
@@ -91,15 +61,15 @@ auto Field::checkCollision(const raylib::Vector2 &point) const -> bool {
 
 void Field::drawSymbol(const float lineThickness,
                        const raylib::Color &color) const {
-  switch (*(this->m_symbol)) {
-  case Cross:
-    this->drawCross(lineThickness, color);
-    break;
-  case Circle:
-    this->drawCircle(lineThickness, color);
-    break;
-  case None:
-    break;
+  switch (*this->m_symbol) {
+    case Symbol::Cross:
+      this->drawCross(lineThickness, color);
+      break;
+    case Symbol::Circle:
+      this->drawCircle(lineThickness, color);
+      break;
+    case Symbol::None:
+      break;
   }
 }
 
@@ -122,22 +92,20 @@ void Line::draw(const float lineThickness, const raylib::Color &color) const {
   this->m_lineStart.DrawLine(this->m_lineEnd, lineThickness, color);
 }
 
-auto Line::lineStart() -> raylib::Vector2 const { return this->m_lineStart; }
+auto Line::lineStart() const -> const raylib::Vector2& { return this->m_lineStart; }
+auto Line::lineEnd() const -> const raylib::Vector2& { return this->m_lineEnd; }
 
-auto Line::lineEnd() -> raylib::Vector2 const { return this->m_lineEnd; }
-Evaluator::Evaluator(const vector<shared_ptr<Symbol>> &line) : m_line(line) {}
-auto Evaluator::create(const shared_ptr<Symbol> &first,
-                       const shared_ptr<Symbol> &second,
-                       const shared_ptr<Symbol> &third) -> Evaluator {
-  const vector<shared_ptr<Symbol>> line =
-      vector<shared_ptr<Symbol>>({first, second, third});
-  return Evaluator(line);
+Evaluator::Evaluator(vector<shared_ptr<Symbol>> &&line) : m_line(std::move(line)) {}
+auto Evaluator::create(shared_ptr<Symbol> first,
+                       shared_ptr<Symbol> second,
+                       shared_ptr<Symbol> third) -> Evaluator {
+  return Evaluator({std::move(first), std::move(second), std::move(third)});
 }
 auto Evaluator::evaluate() const -> Symbol {
   bool symbolsAreSame =
-      (*(m_line[0]) == *(m_line[1])) && (*(m_line[1]) == *(m_line[2]));
+      (*m_line.at(0) == *m_line.at(1)) && (*m_line.at(1) == *m_line.at(2));
   if (symbolsAreSame) {
-    return *(m_line[0]);
+    return *m_line.at(0);
   }
   return Symbol::None;
 }

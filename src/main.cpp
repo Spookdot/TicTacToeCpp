@@ -11,20 +11,25 @@
 using std::shared_ptr;
 using std::string;
 
-namespace {
-enum GameState : std::uint8_t { Start, Game, Finished };
+constexpr float LINE_THICKNESS = 4.0;
+constexpr unsigned int TITLE_FONT_SIZE = 50;
+constexpr unsigned int FONT_SIZE = 30;
+constexpr float TEXT_SPACING = 1.5;
 
-void shuffleSymbol(const shared_ptr<Symbol> &symbol) {
+namespace {
+enum class GameState : std::uint8_t { Start, Game, Finished };
+
+void  shuffleSymbol(const shared_ptr<Symbol> &symbol) {
   switch (*symbol) {
-  case None:
-    *symbol = Symbol::Cross;
-    break;
-  case Cross:
-    *symbol = Symbol::Circle;
-    break;
-  case Circle:
-    *symbol = Symbol::None;
-    break;
+    case Symbol::None:
+      *symbol = Symbol::Cross;
+      break;
+    case Symbol::Cross:
+      *symbol = Symbol::Circle;
+      break;
+    case Symbol::Circle:
+      *symbol = Symbol::None;
+      break;
   }
 }
 
@@ -38,10 +43,10 @@ void drawCenteredText(const string &text, const raylib::Vector2 &position,
   font.DrawText(text, actualPosition, fontSize, spacing, color);
 }
 
-auto createCenteredRectangle(const float x, const float y, const float width,
+auto createCenteredRectangle(const raylib::Vector2 &position, const float width,
                              const float height) -> raylib::Rectangle {
-  const float actualX = x - (width / 2);
-  const float actualY = y - (height / 2);
+  const float actualX = position.x - (width / 2);
+  const float actualY = position.y - (height / 2);
   return {actualX, actualY, width, height};
 }
 } // namespace
@@ -51,6 +56,7 @@ auto main() -> int {
   constexpr int screenWidth = 800;
   const auto screenHeightFloat = static_cast<float>(screenHeight);
   const auto screenWidthFloat = static_cast<float>(screenWidth);
+  const raylib::Rectangle screen(0, 0, screenWidth, screenHeight);
 
   raylib::Window window(screenWidth, screenHeight, "Tic Tac Toe",
                         FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
@@ -60,11 +66,13 @@ auto main() -> int {
   std::optional<Symbol> winner = std::optional<Symbol>();
 
   // GameState::Start data
-  raylib::Rectangle startButton = createCenteredRectangle(
-      screenWidthFloat / 2, screenHeightFloat / 3 * 2, 100, 50);
+  raylib::Vector2 buttonPosition(screenWidthFloat / 2, screenHeightFloat / 3 * 2);
+  const float buttonWidth = screenWidthFloat / 8;
+  const float buttonHeight = screenHeightFloat / 12;
+  raylib::Rectangle startButton = createCenteredRectangle(buttonPosition, buttonWidth, buttonHeight);
 
   // GameState::Game data
-  auto game = Game::create(screenWidth, screenHeight);
+  auto game = Game::create(screen);
 
   while (!window.ShouldClose()) {
     if (gameState == GameState::Start) {
@@ -81,10 +89,10 @@ auto main() -> int {
 
       raylib::Vector2 textPosition =
           raylib::Vector2(screenWidthFloat / 2, screenHeightFloat / 3);
-      drawCenteredText("Tic Tac Toe", textPosition, 50, 1.5,
+      drawCenteredText("Tic Tac Toe", textPosition, TITLE_FONT_SIZE, TEXT_SPACING,
                        raylib::Color::Black());
 
-      startButton.DrawLines(raylib::Color::Black(), 2.0);
+      startButton.DrawLines(raylib::Color::Black(), LINE_THICKNESS);
 
       window.EndDrawing();
     } else if (gameState == GameState::Game) {
@@ -105,7 +113,7 @@ auto main() -> int {
       window.BeginDrawing();
       window.ClearBackground(raylib::Color::White());
 
-      game.draw(4.0, raylib::Color::Black());
+      game.draw(LINE_THICKNESS, raylib::Color::Black());
       game.drawSymbols();
 
       window.EndDrawing();
@@ -120,7 +128,7 @@ auto main() -> int {
       string text = std::format("{} wins!", winner.value());
       raylib::Vector2 textPosition =
           raylib::Vector2(screenWidthFloat / 2, screenHeightFloat / 2);
-      drawCenteredText(text, textPosition, 30, 1.5, raylib::Color::Black());
+      drawCenteredText(text, textPosition, FONT_SIZE, TEXT_SPACING, raylib::Color::Black());
 
       window.EndDrawing();
     }
