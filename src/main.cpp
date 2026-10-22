@@ -86,12 +86,18 @@ auto main() -> int {
 
     while (!raylib::Window::ShouldClose()) {
       if (gameState == GameState::Start) {
-        if (raylib::Mouse::IsButtonPressed(MOUSE_LEFT_BUTTON)) {
-          const bool startButtonPressed =
-              startButton.CheckCollision(raylib::Mouse::GetPosition());
-          if (startButtonPressed) {
+        const auto mousePosition = raylib::Mouse::GetPosition();
+        const bool overButton = startButton.CheckCollision(mousePosition);
+
+        if (overButton) {
+          raylib::Mouse::SetCursor(MOUSE_CURSOR_POINTING_HAND);
+
+          if (raylib::Mouse::IsButtonPressed(MOUSE_LEFT_BUTTON)) {
             gameState = GameState::Game;
+            raylib::Mouse::SetCursor(MOUSE_CURSOR_DEFAULT);
           }
+        } else {
+          raylib::Mouse::SetCursor(MOUSE_CURSOR_DEFAULT);
         }
 
         while(window.Drawing()) {
@@ -105,6 +111,7 @@ auto main() -> int {
                            raylib::Color::Black());
 
           startButton.DrawLines(raylib::Color::Black(), LINE_THICKNESS);
+          drawCenteredText("Start", buttonPosition, FONT_SIZE, TEXT_SPACING, raylib::Color::Black());
         }
       } else if (gameState == GameState::Game) {
         std::optional<raylib::Rectangle> rect =

@@ -7,7 +7,7 @@ This is an attempt to implement Tic Tac Toe with raylib-cpp in C++ obeying C++23
 [x] Evaluate whether the game is over every frame
 [x] Add start screen
 [x] Add win screen
-[ ] Add text to start button
+[x] Add text to start button
 [ ] Redesign symbols
 [ ] Re-structure code for every screen into a separate class
 [ ] Make it so that the Symbol being placed changes after every click
