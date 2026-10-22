@@ -94,19 +94,18 @@ auto main() -> int {
           }
         }
 
-        window.BeginDrawing();
-        window.ClearBackground(raylib::Color::White());
+        while(window.Drawing()) {
+          window.ClearBackground(raylib::Color::White());
 
-        const raylib::Vector2 textPosition(
-          screenWidthFloat / 2, 
-          screenHeightFloat / 3
-        );
-        drawCenteredText("Tic Tac Toe", textPosition, TITLE_FONT_SIZE, TEXT_SPACING,
-                         raylib::Color::Black());
+          const raylib::Vector2 textPosition(
+            screenWidthFloat / 2, 
+            screenHeightFloat / 3
+          );
+          drawCenteredText("Tic Tac Toe", textPosition, TITLE_FONT_SIZE, TEXT_SPACING,
+                           raylib::Color::Black());
 
-        startButton.DrawLines(raylib::Color::Black(), LINE_THICKNESS);
-
-        window.EndDrawing();
+          startButton.DrawLines(raylib::Color::Black(), LINE_THICKNESS);
+        }
       } else if (gameState == GameState::Game) {
         std::optional<raylib::Rectangle> rect =
             std::optional<raylib::Rectangle>();
@@ -122,29 +121,27 @@ auto main() -> int {
           }
         }
 
-        window.BeginDrawing();
-        window.ClearBackground(raylib::Color::White());
+        while(window.Drawing()) {
+          window.ClearBackground(raylib::Color::White());
 
-        game.draw(LINE_THICKNESS, raylib::Color::Black());
-        game.drawSymbols();
-
-        window.EndDrawing();
+          game.draw(LINE_THICKNESS, raylib::Color::Black());
+          game.drawSymbols();
+        }
       } else if (gameState == GameState::Finished) {
         if (!winner.has_value()) {
           return EXIT_FAILURE;
         }
 
-        window.BeginDrawing();
-        window.ClearBackground(raylib::Color::White());
+        while(window.Drawing()) {
+          window.ClearBackground(raylib::Color::White());
 
-        string text = std::format("{} wins!", winner.value());
-        const raylib::Vector2 textPosition(
-          screenWidthFloat / 2,
-          screenHeightFloat / 2
-        );
-        drawCenteredText(text, textPosition, FONT_SIZE, TEXT_SPACING, raylib::Color::Black());
-
-        window.EndDrawing();
+          string text = std::format("{} wins!", winner.value());
+          const raylib::Vector2 textPosition(
+            screenWidthFloat / 2,
+            screenHeightFloat / 2
+          );
+          drawCenteredText(text, textPosition, FONT_SIZE, TEXT_SPACING, raylib::Color::Black());
+        }
       }
     }
   } catch (const std::exception& e) {
