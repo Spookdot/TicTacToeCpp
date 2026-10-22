@@ -10,6 +10,16 @@
 using std::shared_ptr;
 using std::vector;
 
+constexpr float CIRCLE_ROUNDNESS = 1.0F;
+constexpr unsigned int CIRCLE_SEGMENTS = 5;
+
+namespace {
+void centerRectangleInPlace(raylib::Rectangle &rect, const raylib::Rectangle &area) {
+  const raylib::Vector2 position = area.GetPosition() + ((area.GetSize() - rect.GetSize()) / 2);
+  rect.SetPosition(position);
+}
+} // namespace
+
 Field::Field(const raylib::Rectangle &rectangle, std::shared_ptr<Symbol> pointer)
     : m_collider(rectangle), m_symbol(std::move(pointer)) {}
 
@@ -35,11 +45,17 @@ void Field::drawCircle(const float lineThickness,
   // TODO Consider using Rectangle and DrawRoundedLines instead to get an empty
   // circle or get Background color from global state and draw a second circle
   // over the first
-  const raylib::Vector2 middle =
-      this->m_collider.GetPosition() + (this->m_collider.GetSize() / 2);
 
-  const float radius = 30.0;
-  middle.DrawCircle(radius, color);
+  const float resizeFactor = 0.8F;
+  // Set both to height to create a square
+  raylib::Rectangle circle = {};
+  circle.SetSize(
+      this->m_collider.height * resizeFactor, 
+      this->m_collider.height * resizeFactor
+  );
+  centerRectangleInPlace(circle, this->m_collider);
+
+  circle.DrawRoundedLines(CIRCLE_ROUNDNESS, CIRCLE_SEGMENTS, lineThickness, color);
 }
 
 void Field::drawCircle(const raylib::Color &color) const {
