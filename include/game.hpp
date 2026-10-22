@@ -10,7 +10,7 @@ class Game {
   std::vector<Evaluator> m_evaluators;
   Game(std::vector<std::vector<Field>> field, std::vector<Line> lines,
        std::vector<Evaluator> evaluators);
-  auto static createLines(const raylib::Rectangle&, const raylib::Rectangle&) -> std::vector<Line>;
+  auto static createLines(const raylib::Rectangle& rect, const raylib::Rectangle& screen) -> std::vector<Line>;
   auto static createField(float rectWidth, float rectHeight)
       -> std::vector<std::vector<Field>>;
   auto static createEvaluators(const std::vector<std::vector<Field>> &field)
@@ -22,7 +22,7 @@ class Game {
       const std::function<void(const Field &)> &forEachFunction) const -> void;
 
 public:
-  auto static create(const raylib::Rectangle&) -> Game;
+  auto static create(const raylib::Rectangle& screen) -> Game;
   void draw(const raylib::Color &color) const;
   void draw(float lineThickness, const raylib::Color &color) const;
   auto findColliders(const raylib::Vector2 &vec) -> std::vector<Field>;

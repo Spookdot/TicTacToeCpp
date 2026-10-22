@@ -1,8 +1,17 @@
+#include <Mouse.hpp>
+#include <Window.hpp>
+#include <Font.hpp>
+#include <Vector2.hpp>
+#include <Rectangle.hpp>
+#include <Color.hpp>
 #include <cstdint>
+#include <cstdlib>
+#include <exception>
 #include <format>
+#include <iostream>
 #include <memory>
 #include <optional>
-#include <raylib-cpp.hpp>
+#include <string>
 #include <raylib.h>
 
 #include "extras.hpp"
@@ -58,81 +67,90 @@ auto main() -> int {
   const auto screenWidthFloat = static_cast<float>(screenWidth);
   const raylib::Rectangle screen(0, 0, screenWidth, screenHeight);
 
-  raylib::Window window(screenWidth, screenHeight, "Tic Tac Toe",
-                        FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
+  try {
+    raylib::Window window(screenWidth, screenHeight, "Tic Tac Toe",
+                          FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
 
-  // General data
-  auto gameState = GameState::Start;
-  std::optional<Symbol> winner = std::optional<Symbol>();
+    // General data
+    auto gameState = GameState::Start;
+    std::optional<Symbol> winner = std::optional<Symbol>();
 
-  // GameState::Start data
-  raylib::Vector2 buttonPosition(screenWidthFloat / 2, screenHeightFloat / 3 * 2);
-  const float buttonWidth = screenWidthFloat / 8;
-  const float buttonHeight = screenHeightFloat / 12;
-  raylib::Rectangle startButton = createCenteredRectangle(buttonPosition, buttonWidth, buttonHeight);
+    // GameState::Start data
+    const raylib::Vector2 buttonPosition(screenWidthFloat / 2, screenHeightFloat / 3 * 2);
+    const float buttonWidth = screenWidthFloat / 8;
+    const float buttonHeight = screenHeightFloat / 12;
+    const auto startButton = createCenteredRectangle(buttonPosition, buttonWidth, buttonHeight);
 
-  // GameState::Game data
-  auto game = Game::create(screen);
+    // GameState::Game data
+    auto game = Game::create(screen);
 
-  while (!window.ShouldClose()) {
-    if (gameState == GameState::Start) {
-      if (raylib::Mouse::IsButtonPressed(MOUSE_LEFT_BUTTON)) {
-        bool startButtonPressed =
-            startButton.CheckCollision(raylib::Mouse::GetPosition());
-        if (startButtonPressed) {
-          gameState = GameState::Game;
+    while (!raylib::Window::ShouldClose()) {
+      if (gameState == GameState::Start) {
+        if (raylib::Mouse::IsButtonPressed(MOUSE_LEFT_BUTTON)) {
+          const bool startButtonPressed =
+              startButton.CheckCollision(raylib::Mouse::GetPosition());
+          if (startButtonPressed) {
+            gameState = GameState::Game;
+          }
         }
-      }
 
-      window.BeginDrawing();
-      window.ClearBackground(raylib::Color::White());
+        window.BeginDrawing();
+        window.ClearBackground(raylib::Color::White());
 
-      raylib::Vector2 textPosition =
-          raylib::Vector2(screenWidthFloat / 2, screenHeightFloat / 3);
-      drawCenteredText("Tic Tac Toe", textPosition, TITLE_FONT_SIZE, TEXT_SPACING,
-                       raylib::Color::Black());
+        const raylib::Vector2 textPosition(
+          screenWidthFloat / 2, 
+          screenHeightFloat / 3
+        );
+        drawCenteredText("Tic Tac Toe", textPosition, TITLE_FONT_SIZE, TEXT_SPACING,
+                         raylib::Color::Black());
 
-      startButton.DrawLines(raylib::Color::Black(), LINE_THICKNESS);
+        startButton.DrawLines(raylib::Color::Black(), LINE_THICKNESS);
 
-      window.EndDrawing();
-    } else if (gameState == GameState::Game) {
-      std::optional<raylib::Rectangle> rect =
-          std::optional<raylib::Rectangle>();
-      if (raylib::Mouse::IsButtonPressed(MOUSE_LEFT_BUTTON)) {
-        Field field = game.findCollider(raylib::Mouse::GetPosition());
-        rect = field.collider();
-        shuffleSymbol(field.symbolPointer());
+        window.EndDrawing();
+      } else if (gameState == GameState::Game) {
+        std::optional<raylib::Rectangle> rect =
+            std::optional<raylib::Rectangle>();
+        if (raylib::Mouse::IsButtonPressed(MOUSE_LEFT_BUTTON)) {
+          const Field field = game.findCollider(raylib::Mouse::GetPosition());
+          rect = field.collider();
+          shuffleSymbol(field.symbolPointer());
 
-        Symbol symbol = game.getWinner();
-        if (symbol != Symbol::None) {
-          winner = symbol;
-          gameState = GameState::Finished;
+          Symbol symbol = game.getWinner();
+          if (symbol != Symbol::None) {
+            winner = symbol;
+            gameState = GameState::Finished;
+          }
         }
+
+        window.BeginDrawing();
+        window.ClearBackground(raylib::Color::White());
+
+        game.draw(LINE_THICKNESS, raylib::Color::Black());
+        game.drawSymbols();
+
+        window.EndDrawing();
+      } else if (gameState == GameState::Finished) {
+        if (!winner.has_value()) {
+          return EXIT_FAILURE;
+        }
+
+        window.BeginDrawing();
+        window.ClearBackground(raylib::Color::White());
+
+        string text = std::format("{} wins!", winner.value());
+        const raylib::Vector2 textPosition(
+          screenWidthFloat / 2,
+          screenHeightFloat / 2
+        );
+        drawCenteredText(text, textPosition, FONT_SIZE, TEXT_SPACING, raylib::Color::Black());
+
+        window.EndDrawing();
       }
-
-      window.BeginDrawing();
-      window.ClearBackground(raylib::Color::White());
-
-      game.draw(LINE_THICKNESS, raylib::Color::Black());
-      game.drawSymbols();
-
-      window.EndDrawing();
-    } else if (gameState == GameState::Finished) {
-      if (!winner.has_value()) {
-        return 1;
-      }
-
-      window.BeginDrawing();
-      window.ClearBackground(raylib::Color::White());
-
-      string text = std::format("{} wins!", winner.value());
-      raylib::Vector2 textPosition =
-          raylib::Vector2(screenWidthFloat / 2, screenHeightFloat / 2);
-      drawCenteredText(text, textPosition, FONT_SIZE, TEXT_SPACING, raylib::Color::Black());
-
-      window.EndDrawing();
     }
+  } catch (const std::exception& e) {
+    std::cerr << e.what() << '\n';
+    return EXIT_FAILURE;
   }
 
-  return 0;
+  return EXIT_SUCCESS;
 }

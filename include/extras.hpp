@@ -1,10 +1,11 @@
 #pragma once
 
 #include <Vector2.hpp>
-#include <cstdint>
+#include <Rectangle.hpp>
+#include <Color.hpp>
 #include <format>
 #include <memory>
-#include <raylib-cpp.hpp>
+#include <vector>
 
 #define DEFAULT_COLOR {0, 0, 0, 255}
 
@@ -28,7 +29,7 @@ template <> struct std::formatter<Symbol> : std::formatter<string> {
 class Field {
   raylib::Rectangle m_collider;
   std::shared_ptr<Symbol> m_symbol;
-  Field(const raylib::Rectangle&, std::shared_ptr<Symbol>);
+  Field(const raylib::Rectangle& rectangle, std::shared_ptr<Symbol> pointer);
   void drawCross(float lineThickness,
                  const raylib::Color &color = DEFAULT_COLOR) const;
   void drawCross(const raylib::Color &color = DEFAULT_COLOR) const;
@@ -48,17 +49,12 @@ public:
   void drawSymbol(const raylib::Color &color = DEFAULT_COLOR) const;
 };
 
-class Line {
-  raylib::Vector2 m_lineStart;
-  raylib::Vector2 m_lineEnd;
+struct Line {
+  raylib::Vector2 lineStart;
+  raylib::Vector2 lineEnd;
 
-public:
-  Line(raylib::Vector2 lineStart, raylib::Vector2 lineEnd);
-  Line(float startX, float startY, float endX, float endY);
   void draw(const raylib::Color &color) const;
   void draw(float lineThickness, const raylib::Color &color) const;
-  auto lineStart() const -> const raylib::Vector2&;
-  auto lineEnd() const -> const raylib::Vector2&;
 };
 
 class Evaluator {

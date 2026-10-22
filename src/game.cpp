@@ -1,11 +1,17 @@
 #include "game.hpp"
 
+#include <Vector2.hpp>
+#include <Rectangle.hpp>
+#include <Color.hpp>
 #include <algorithm>
-#include <cassert>
+#include <cstddef>
 #include <functional>
 #include <iterator>
-#include <ranges>
+#include <vector>
 #include <utility>
+#include <ranges>
+
+#include "extras.hpp"
 
 using std::vector;
 namespace ranges = std::ranges;
@@ -20,12 +26,28 @@ auto Game::createLines(const raylib::Rectangle &rect, const raylib::Rectangle &s
   auto lines = vector<Line>();
 
   // Lines top to bottom
-  lines.emplace_back(rect.width, 0, rect.width, screen.height);
-  lines.emplace_back(rect.width * 2, 0, rect.width * 2, screen.height);
+  {
+    const raylib::Vector2 lineStart(rect.width, 0);
+    const raylib::Vector2 lineEnd(rect.width, screen.height);
+    lines.emplace_back(lineStart, lineEnd);
+  }
+  {
+    const raylib::Vector2 lineStart(rect.width * 2, 0);
+    const raylib::Vector2 lineEnd(rect.width * 2, screen.height);
+    lines.emplace_back(lineStart, lineEnd);
+  }
 
   // Lines left to right
-  lines.emplace_back(0, rect.height, screen.width, rect.height);
-  lines.emplace_back(0, rect.height * 2, screen.width, rect.height * 2);
+  {
+    const raylib::Vector2 lineStart(0, rect.height);
+    const raylib::Vector2 lineEnd(screen.width, rect.height);
+    lines.emplace_back(lineStart, lineEnd);
+  }
+  {
+    const raylib::Vector2 lineStart(0, rect.height * 2);
+    const raylib::Vector2 lineEnd(screen.width, rect.height * 2);
+    lines.emplace_back(lineStart, lineEnd);
+  }
 
   return lines;
 }
@@ -37,7 +59,7 @@ auto Game::createField(const float rectWidth, const float rectHeight)
   for (size_t i = 0; i < 3; i++) {
     auto current_line = vector<Field>();
     for (size_t j = 0; j < 3; j++) {
-      raylib::Rectangle rectangle = {
+      const raylib::Rectangle rectangle = {
         rectWidth * static_cast<float>(i), 
         rectHeight * static_cast<float>(j),
         rectWidth, 
@@ -133,7 +155,7 @@ void Game::drawSymbols() const {
 
 auto Game::getWinner() const -> Symbol {
   for (const auto &evaluator : this->m_evaluators) {
-    Symbol symbol = evaluator.evaluate();
+    const Symbol symbol = evaluator.evaluate();
     if (symbol != Symbol::None) {
       return symbol;
     }

@@ -1,7 +1,10 @@
 #include "extras.hpp"
 
+#include <Vector2.hpp>
+#include <Rectangle.hpp>
+#include <Color.hpp>
+#include <vector>
 #include <memory>
-#include <raylib-cpp.hpp>
 #include <utility>
 
 using std::shared_ptr;
@@ -13,10 +16,10 @@ Field::Field(const raylib::Rectangle &rectangle, std::shared_ptr<Symbol> pointer
 void Field::drawCross(const float lineThickness,
                       const raylib::Color &color) const {
   // TODO change so it doesn't go all the way to the corners
-  raylib::Vector2 upperLeft = this->m_collider.GetPosition();
-  raylib::Vector2 upperRight = { upperLeft.x + this->m_collider.width, upperLeft.y};
-  raylib::Vector2 lowerLeft = { upperLeft.x, upperLeft.y + this->m_collider.height };
-  raylib::Vector2 lowerRight = upperLeft + this->m_collider.GetSize();
+  const raylib::Vector2 upperLeft = this->m_collider.GetPosition();
+  const raylib::Vector2 upperRight(upperLeft.x + this->m_collider.width, upperLeft.y);
+  const raylib::Vector2 lowerLeft(upperLeft.x, upperLeft.y + this->m_collider.height);
+  const raylib::Vector2 lowerRight = upperLeft + this->m_collider.GetSize();
 
   upperLeft.DrawLine(lowerRight, lineThickness, color);
   upperRight.DrawLine(lowerLeft, lineThickness, color);
@@ -32,10 +35,11 @@ void Field::drawCircle(const float lineThickness,
   // TODO Consider using Rectangle and DrawRoundedLines instead to get an empty
   // circle or get Background color from global state and draw a second circle
   // over the first
-  raylib::Vector2 middle =
+  const raylib::Vector2 middle =
       this->m_collider.GetPosition() + (this->m_collider.GetSize() / 2);
 
-  middle.DrawCircle(30.0, color);
+  const float radius = 30.0;
+  middle.DrawCircle(radius, color);
 }
 
 void Field::drawCircle(const raylib::Color &color) const {
@@ -77,23 +81,13 @@ void Field::drawSymbol(const raylib::Color &color) const {
   this->drawSymbol(1.0, color);
 }
 
-Line::Line(const raylib::Vector2 lineStart, const raylib::Vector2 lineEnd)
-    : m_lineStart(lineStart), m_lineEnd(lineEnd) {}
-
-Line::Line(const float startX, const float startY, const float endX,
-           const float endY)
-    : m_lineStart(startX, startY), m_lineEnd(endX, endY) {}
-
 void Line::draw(const raylib::Color &color) const {
-  this->m_lineStart.DrawLine(this->m_lineEnd, color);
+  this->lineStart.DrawLine(this->lineEnd, color);
 }
 
 void Line::draw(const float lineThickness, const raylib::Color &color) const {
-  this->m_lineStart.DrawLine(this->m_lineEnd, lineThickness, color);
+  this->lineStart.DrawLine(this->lineEnd, lineThickness, color);
 }
-
-auto Line::lineStart() const -> const raylib::Vector2& { return this->m_lineStart; }
-auto Line::lineEnd() const -> const raylib::Vector2& { return this->m_lineEnd; }
 
 Evaluator::Evaluator(vector<shared_ptr<Symbol>> &&line) : m_line(std::move(line)) {}
 auto Evaluator::create(shared_ptr<Symbol> first,
@@ -102,7 +96,7 @@ auto Evaluator::create(shared_ptr<Symbol> first,
   return Evaluator({std::move(first), std::move(second), std::move(third)});
 }
 auto Evaluator::evaluate() const -> Symbol {
-  bool symbolsAreSame =
+  const bool symbolsAreSame =
       (*m_line.at(0) == *m_line.at(1)) && (*m_line.at(1) == *m_line.at(2));
   if (symbolsAreSame) {
     return *m_line.at(0);

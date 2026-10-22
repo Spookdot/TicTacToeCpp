@@ -2,6 +2,8 @@
 # Enable ALL the things! Except not really
 # misc-non-private-member-variables-in-classes: the options don't do anything
 # modernize-use-nodiscard: too aggressive, attribute is situationally useful
+# llvm-prefer-static-over-anonymous-namespace: conflicts with other checks
+# portability-avoid-pragma-once: This is a C++23 TicTacToe implementation, if your compiler doesn't have Pragma then update
 Checks: "*,\
   -google-readability-todo,\
   -altera-*,\
@@ -11,7 +13,9 @@ Checks: "*,\
   -llvm-include-order,\
   -llvmlibc-*,\
   -modernize-use-nodiscard,\
-  -misc-non-private-member-variables-in-classes"
+  -misc-non-private-member-variables-in-classes,\
+  -llvm-prefer-static-over-anonymous-namespace,\
+  -portability-avoid-pragma-once"
 WarningsAsErrors: ''
 CheckOptions:
   - key: 'bugprone-argument-comment.StrictMode'
