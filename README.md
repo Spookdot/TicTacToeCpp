@@ -8,7 +8,7 @@ This is an attempt to implement Tic Tac Toe with raylib-cpp in C++ obeying C++23
 [x] Add start screen
 [x] Add win screen
 [x] Add text to start button
-[ ] Redesign symbols
+[x] Redesign symbols
 [ ] Re-structure code for every screen into a separate class
 [ ] Make it so that the Symbol being placed changes after every click
 [ ] Prevent Symbol in a field being replaced

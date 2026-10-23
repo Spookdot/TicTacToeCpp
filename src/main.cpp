@@ -132,7 +132,7 @@ auto main() -> int {
           window.ClearBackground(raylib::Color::White());
 
           game.draw(LINE_THICKNESS, raylib::Color::Black());
-          game.drawSymbols();
+          game.drawSymbols(LINE_THICKNESS, raylib::Color::Black());
         }
       } else if (gameState == GameState::Finished) {
         if (!winner.has_value()) {

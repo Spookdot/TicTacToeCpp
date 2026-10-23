@@ -149,8 +149,12 @@ auto Game::findCollider(const raylib::Vector2 &vec) -> Field {
   return this->findColliders(vec).at(0);
 }
 
-void Game::drawSymbols() const {
-  this->forEachInField([](const Field &field) -> void { field.drawSymbol(); });
+void Game::drawSymbols(const raylib::Color &color) const {
+  this->forEachInField([&color](const Field &field) -> void { field.drawSymbol(color); });
+}
+
+void Game::drawSymbols(const float lineThickness, const raylib::Color &color) const {
+  this->forEachInField([lineThickness, &color](const Field &field) -> void { field.drawSymbol(lineThickness, color); });
 }
 
 auto Game::getWinner() const -> Symbol {

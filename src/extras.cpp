@@ -12,6 +12,7 @@ using std::vector;
 
 constexpr float CIRCLE_ROUNDNESS = 1.0F;
 constexpr unsigned int CIRCLE_SEGMENTS = 5;
+constexpr float RESIZE_FACTOR = 0.8F;
 
 namespace {
 void centerRectangleInPlace(raylib::Rectangle &rect, const raylib::Rectangle &area) {
@@ -25,11 +26,14 @@ Field::Field(const raylib::Rectangle &rectangle, std::shared_ptr<Symbol> pointer
 
 void Field::drawCross(const float lineThickness,
                       const raylib::Color &color) const {
-  // TODO change so it doesn't go all the way to the corners
-  const raylib::Vector2 upperLeft = this->m_collider.GetPosition();
-  const raylib::Vector2 upperRight(upperLeft.x + this->m_collider.width, upperLeft.y);
-  const raylib::Vector2 lowerLeft(upperLeft.x, upperLeft.y + this->m_collider.height);
-  const raylib::Vector2 lowerRight = upperLeft + this->m_collider.GetSize();
+  raylib::Rectangle canvas = {};
+  canvas.SetSize(this->m_collider.GetSize() * RESIZE_FACTOR);
+  centerRectangleInPlace(canvas, this->m_collider);
+
+  const raylib::Vector2 upperLeft = canvas.GetPosition();
+  const raylib::Vector2 upperRight(upperLeft.x + canvas.width, upperLeft.y);
+  const raylib::Vector2 lowerLeft(upperLeft.x, upperLeft.y + canvas.height);
+  const raylib::Vector2 lowerRight = upperLeft + canvas.GetSize();
 
   upperLeft.DrawLine(lowerRight, lineThickness, color);
   upperRight.DrawLine(lowerLeft, lineThickness, color);
@@ -41,17 +45,11 @@ void Field::drawCross(const raylib::Color &color) const {
 
 void Field::drawCircle(const float lineThickness,
                        const raylib::Color &color) const {
-  // TODO find use for lineThickness or remove
-  // TODO Consider using Rectangle and DrawRoundedLines instead to get an empty
-  // circle or get Background color from global state and draw a second circle
-  // over the first
-
-  const float resizeFactor = 0.8F;
   // Set both to height to create a square
   raylib::Rectangle circle = {};
   circle.SetSize(
-      this->m_collider.height * resizeFactor, 
-      this->m_collider.height * resizeFactor
+      this->m_collider.height * RESIZE_FACTOR, 
+      this->m_collider.height * RESIZE_FACTOR
   );
   centerRectangleInPlace(circle, this->m_collider);
 

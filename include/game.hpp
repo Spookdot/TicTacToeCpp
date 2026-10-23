@@ -27,6 +27,7 @@ public:
   void draw(float lineThickness, const raylib::Color &color) const;
   auto findColliders(const raylib::Vector2 &vec) -> std::vector<Field>;
   auto findCollider(const raylib::Vector2 &vec) -> Field;
-  void drawSymbols() const;
+  void drawSymbols(const raylib::Color &color = DEFAULT_COLOR) const;
+  void drawSymbols(float lineThickness, const raylib::Color &color) const;
   auto getWinner() const -> Symbol;
 };
